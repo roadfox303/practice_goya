@@ -1,0 +1,54 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  </head>
+  <body>
+    <h1>テスト！！！！！！！！！！！！！</h1>
+
+    <% require 'pg' %>
+
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+
+    <form action="indicate.cgi" method="POST">
+       下記に文字を入力してください<br><br>
+      <input type="text"  name="input" ><br>
+      <input type="submit" name="送信" >
+    </form>
+
+    <% result = connection.exec("select date, weight, give_for from crops;") %>
+    <% date = [] << "ゴーヤの大きさと売った相手|"%>
+    <% result.each do |record| %>
+      <%  date << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+
+    <% result2 = connection.exec("select date, weight, give_for from crops where give_for != '自家消費';") %>
+    <% date2 = [] << "自家消費以外のゴーヤ|"%>
+    <% result2.each do |record| %>
+      <%  date2 << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}" %>
+    <% end %>
+
+    <% result3 = connection.exec("select date, weight, quality, give_for from crops where quality = false ;") %>
+    <% date3 = [] << "品質の良くないゴーヤ|"%>
+    <% result3.each do |record| %>
+      <%  date3 << "ゴーヤの大きさ：#{record["weight"]}　売った相手：#{record["give_for"]}　クオリティ：#{record["quality"]}" %>
+    <% end %>
+
+
+    <form action="goya.cgi" method="POST">
+       下記のボタンを押すと、ゴーヤの大きさと売った相手の情報ページに飛びます<br><br>
+      <input type="text" name="goya" value="<%= date.join(' ') %>" style = "display:none">
+      <input type="submit" name="送信" >
+    </form>
+    <form action="goya.cgi" method="POST">
+       下記のボタンを押すと、自家消費以外のゴーヤを売った相手の情報ページに飛びます<br><br>
+      <input type="text" name="goya" value="<%= date2.join(' ') %>" style = "display:none">
+      <input type="submit" name="送信" >
+    </form>
+    <form action="goya.cgi" method="POST">
+       下記のボタンを押すと、品質が悪いゴーヤ情報ページに飛びます<br><br>
+      <input type="text" name="goya" value="<%= date3.join(' ') %>" style = "display:none">
+      <input type="submit" name="送信" >
+    </form>
+  </body>
+</html>
